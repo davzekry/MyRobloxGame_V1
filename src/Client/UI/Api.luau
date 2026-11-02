@@ -26,6 +26,7 @@ local Api = {}
 
 local currentState: Types.PlayerState? = nil
 local stateListeners: { (Types.PlayerState) -> () } = {}
+local rejectionListeners: { (Types.RejectionEntry) -> () } = {}
 
 function Api.init()
 	Remotes.event("StateChanged").OnClientEvent:Connect(function(state: Types.PlayerState)
@@ -34,6 +35,15 @@ function Api.init()
 			task.spawn(listener, state)
 		end
 	end)
+	Remotes.event("RejectionLogged").OnClientEvent:Connect(function(entry: Types.RejectionEntry)
+		for _, listener in rejectionListeners do
+			task.spawn(listener, entry)
+		end
+	end)
+end
+
+function Api.onRejection(listener: (Types.RejectionEntry) -> ())
+	table.insert(rejectionListeners, listener)
 end
 
 function Api.state(): Types.PlayerState?

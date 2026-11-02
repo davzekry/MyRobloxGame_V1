@@ -16,6 +16,7 @@ local STORE_NAME = if RunService:IsStudio() then "PlayerData_Studio" else "Playe
 local LOAD_DEADLINE_SECONDS = 30
 local RELEASE_POLL_SECONDS = 0.1
 local REJOIN_MESSAGE = "We couldn't load your data, and nothing was changed. Please rejoin."
+local SESSION_ENDED_MESSAGE = "Your data was opened on another server, so this session has ended. Please rejoin."
 
 local PlayerDataService = {}
 
@@ -38,8 +39,9 @@ local function onSessionEnd(player: Player, profile: Profile)
 	if releasing[player.UserId] == profile then
 		releasing[player.UserId] = nil
 	end
-	if player.Parent == Players then
-		player:Kick(REJOIN_MESSAGE)
+	-- During shutdown Roblox already disconnects everyone, so only a takeover needs a message.
+	if player.Parent == Players and not ProfileStore.IsClosing then
+		player:Kick(SESSION_ENDED_MESSAGE)
 	end
 end
 

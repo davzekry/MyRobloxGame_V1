@@ -6,6 +6,7 @@ local Api = require(UI:WaitForChild("Api"))
 local Hud = require(UI:WaitForChild("Hud"))
 local InventoryPanel = require(UI:WaitForChild("InventoryPanel"))
 local ShopPanel = require(UI:WaitForChild("ShopPanel"))
+local StressPanel = require(UI:WaitForChild("StressPanel"))
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "CrateShop"
@@ -18,4 +19,5 @@ Api.init()
 Hud.new(gui, {
 	{ Name = "Shop", Frame = ShopPanel.new(gui) },
 	{ Name = "Inventory", Frame = InventoryPanel.new(gui) },
+	{ Name = "Stress Test", Frame = StressPanel.new(gui) },
 })

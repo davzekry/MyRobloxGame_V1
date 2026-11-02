@@ -105,6 +105,17 @@ function Style.panel(gui: ScreenGui, title: string): (Frame, ScrollingFrame)
 	return panel, list
 end
 
+-- Wrapped text in a list, for headings, explanations, receipts, and feeds.
+function Style.note(list: ScrollingFrame, order: number, text: string, bold: boolean?): TextLabel
+	local label = Style.label(list, text, if bold then 18 else 15, bold)
+	label.LayoutOrder = order
+	label.Size = UDim2.new(1, -8, 0, 0)
+	label.AutomaticSize = Enum.AutomaticSize.Y
+	label.TextWrapped = true
+	label.TextColor3 = if bold then Style.Colors.Text else Style.Colors.Muted
+	return label
+end
+
 -- One list row with a title, a detail line, and a button on the right.
 function Style.row(list: ScrollingFrame, order: number, title: string): (Frame, TextLabel, TextButton)
 	local row = Instance.new("Frame")
