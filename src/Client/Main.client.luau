@@ -1,10 +1,21 @@
 --!strict
--- Temporary: logs the pushed balance until the HUD arrives in Task 11.
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
-local Remotes = require(ReplicatedStorage.Remotes)
-local Types = require(ReplicatedStorage.Types)
+local UI = script.Parent:WaitForChild("UI")
+local Api = require(UI:WaitForChild("Api"))
+local Hud = require(UI:WaitForChild("Hud"))
+local InventoryPanel = require(UI:WaitForChild("InventoryPanel"))
+local ShopPanel = require(UI:WaitForChild("ShopPanel"))
 
-Remotes.event("StateChanged").OnClientEvent:Connect(function(state: Types.PlayerState)
-	print(`[State] {state.Coins} coins, saving={state.SavingEnabled}`)
-end)
+local gui = Instance.new("ScreenGui")
+gui.Name = "CrateShop"
+gui.ResetOnSpawn = false
+-- Keeps the HUD clear of Roblox's own top bar and phone notches.
+gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+gui.Parent = (Players.LocalPlayer :: Player):WaitForChild("PlayerGui")
+
+Api.init()
+Hud.new(gui, {
+	{ Name = "Shop", Frame = ShopPanel.new(gui) },
+	{ Name = "Inventory", Frame = InventoryPanel.new(gui) },
+})
