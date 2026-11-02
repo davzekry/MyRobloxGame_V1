@@ -1,5 +1,6 @@
 --!strict
--- The only code that changes coins. Nothing here yields, so a caller can check and spend safely.
+-- The only code that changes coins, apart from the demo-only reset in DemoService.
+-- Nothing here yields, so a caller can check and spend safely.
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local PlayerDataService = require(ServerScriptService.Services.PlayerDataService)

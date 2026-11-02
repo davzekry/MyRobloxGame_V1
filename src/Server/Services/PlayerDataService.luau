@@ -28,6 +28,17 @@ local loadedCallbacks: { (Player) -> () } = {}
 
 local function releaseProfile(userId: number, profile: Profile)
 	releasing[userId] = profile
+
+	-- OnSessionEnd fires before the final save is written, so wait for the save itself.
+	-- A same-server rejoin before then would load the older saved copy.
+	local connection
+	connection = profile.OnAfterSave:Connect(function()
+		connection:Disconnect()
+		if releasing[userId] == profile then
+			releasing[userId] = nil
+		end
+	end)
+
 	profile:EndSession()
 end
 
@@ -36,11 +47,13 @@ local function onSessionEnd(player: Player, profile: Profile)
 	if profiles[player] == profile then
 		profiles[player] = nil
 	end
-	if releasing[player.UserId] == profile then
-		releasing[player.UserId] = nil
+
+	-- We ended it ourselves (the player left), or Roblox is disconnecting everyone during
+	-- shutdown. Only a takeover by another server needs a message.
+	if releasing[player.UserId] == profile or ProfileStore.IsClosing then
+		return
 	end
-	-- During shutdown Roblox already disconnects everyone, so only a takeover needs a message.
-	if player.Parent == Players and not ProfileStore.IsClosing then
+	if player.Parent == Players then
 		player:Kick(SESSION_ENDED_MESSAGE)
 	end
 end
@@ -53,8 +66,7 @@ local function loadProfile(player: Player)
 		return player.Parent ~= Players or os.clock() > deadline
 	end
 
-	-- ProfileStore errors if a profile restarts before its last save finishes,
-	-- which happens when a player quickly rejoins the same server.
+	-- A player who quickly rejoins the same server waits for their final save to be written.
 	while releasing[player.UserId] and not isCancelled() do
 		task.wait(RELEASE_POLL_SECONDS)
 	end

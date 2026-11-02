@@ -10,6 +10,7 @@ local Types = require(ReplicatedStorage.Types)
 
 local BURST_SIZE = 50
 local STATE_SETTLE_SECONDS = 0.5
+local BURST_TIMEOUT_SECONDS = 15
 local FEED_LENGTH = 8
 
 type CheatTest = {
@@ -80,8 +81,14 @@ local function runBurst(receipt: TextLabel): string
 			remaining -= 1
 		end)
 	end
-	while remaining > 0 do
+	local deadline = os.clock() + BURST_TIMEOUT_SECONDS
+	while remaining > 0 and os.clock() < deadline do
 		task.wait()
+	end
+	if remaining > 0 then
+		receipt.Text = `No result: {remaining} of {BURST_SIZE} requests didn't answer within {BURST_TIMEOUT_SECONDS} seconds.`
+		receipt.TextColor3 = Style.Colors.Muted
+		return "CallFailed"
 	end
 	task.wait(STATE_SETTLE_SECONDS)
 
@@ -138,7 +145,8 @@ function StressPanel.new(gui: ScreenGui): Frame
 
 	Style.note(list, nextOrder(), "Double-spend", true)
 	local _, burstDetail, burstButton = Style.row(list, nextOrder(), `Fire {BURST_SIZE} buys at once`)
-	burstDetail.Text = "Spent must equal the price of what was bought."
+	-- Coins collected during the burst would also change the balance, so stand clear.
+	burstDetail.Text = "Stand away from coins. Spent must equal the price of what was bought."
 	burstDetail.TextScaled = true
 	local receipt = Style.note(list, nextOrder(), "")
 	Api.bindButton(burstButton, function()
