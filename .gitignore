@@ -15,3 +15,7 @@
 
 # Misc
 .DS_Store
+
+# Private notes, kept local only
+/CLAUDE.md
+/portfolio-roadmap.md
